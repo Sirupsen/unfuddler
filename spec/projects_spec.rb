@@ -48,24 +48,41 @@ describe "Unfuddler::Project" do
       end
     end
 
-    # will awesomeify later!
+    describe "given :all" do
+      it "should return an Array" do
+        Unfuddler::Project.find(:all).should be_an_instance_of Array
+      end
 
-    it "should be able to find right projects using :all, :first and :last" do
-      Unfuddler::Project.find(:all).should be_an_instance_of Array
-      Unfuddler::Project.find(:all).first.should be_an_instance_of Unfuddler::Project
-
-      Unfuddler::Project.find(:first).should be_an_instance_of Unfuddler::Project
-      Unfuddler::Project.find(:first).should eql(Unfuddler::Project.find(:all).first)
-
-      Unfuddler::Project.find(:first)
-
-      Unfuddler::Project.find(:last).should be_an_instance_of Unfuddler::Project
-      Unfuddler::Project.find(:last).should eql(Unfuddler::Project.find(:all).first)
+      it "should return an Array with Unfuddler::Project objects" do
+        Unfuddler::Project.find(:all).first.should be_an_instance_of Unfuddler::Project
+      end
     end
 
-    it "should find a project by id when passing a fixnum" do
-      Unfuddler::Project.find(2).should be_an_instance_of Array
-      Unfuddler::Project.find(2).first.should be_an_instance_of Unfuddler::Project
+    describe "given :first" do
+      it "should return a single Unfuddler::Project object" do
+        Unfuddler::Project.find(:first).should be_an_instance_of Unfuddler::Project
+      end
+    end
+
+    describe "given :last" do
+      it "should return a single Unfuddler::Project object" do
+        Unfuddler::Project.find(:last).should be_an_instance_of Unfuddler::Project
+      end
+    end
+
+    describe "given a fixnum" do
+      it "should return an Array" do
+        Unfuddler::Project.find(2).should be_an_instance_of Array
+      end
+
+      it "should return an Array with Unfuddler::Project objects" do
+        Unfuddler::Project.find(2).first.should be_an_instance_of Unfuddler::Project
+      end
+
+
+      it "should have an id attribute corresponding to the fixnum given" do
+        Unfuddler::Project.find(2).first.id.should equal(2)
+      end
     end
   end
 end
