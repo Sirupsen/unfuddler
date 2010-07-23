@@ -48,7 +48,7 @@ module Unfuddler
 
     def parse_specification(objects, specification)
       if specification.is_a?(String)
-        objects.collect { |object| object if object.short_name == specification.to_s }
+        finder(objects, {:short_name => specification})
       elsif specification.is_a?(Hash)
         finder(objects, specification)
       elsif specification.is_a?(Fixnum)
