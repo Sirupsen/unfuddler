@@ -56,6 +56,21 @@ module Unfuddler
       end
     end
 
+    # Loops through each object, returning only whatever
+    # objects matches the specifications.
+    #
+    # Example
+    #
+    # A Hashie::Mash object is an object you pass a Hash to,
+    # and it makes it act like an object.
+    #
+    #   objects = []
+    #   objects << Hashie::Mash.new({:id => 1, :name => "Bob"})
+    #   objects << Hashie::Mash.new({:id => 2, :name => "John"})
+    #
+    #   finder(objects, {:id => 1, :name => "Bob"})
+    #     #=> Hashie::Mash<#name="Bob", id=1>
+    #
     def finder(objects, specifications)
       objects.select do |object|
         specifications.all? do |method, expected_value|
