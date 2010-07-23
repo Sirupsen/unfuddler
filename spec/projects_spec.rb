@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe "Unfuddler::Project" do
-  before(:all) do
+  before do
     Unfuddler.authenticate(:username => "John", :password => "", :subdomain => "unfuddler")
 
     Unfuddler.stub!(:request).and_return do
@@ -13,8 +13,9 @@ describe "Unfuddler::Project" do
     describe "given no arguments" do
       it "should return an Array" do
         Unfuddler::Project.find.should be_an_instance_of Array
+      end
 
-      it "should return an Array with Unfuddler::Project"
+      it "should return an Array with Unfuddler::Project" do
         Unfuddler::Project.find.first.should be_an_instance_of Unfuddler::Project
       end
     end
@@ -42,7 +43,7 @@ describe "Unfuddler::Project" do
         Unfuddler::Project.find(:id => 2).first.should be_an_instance_of Unfuddler::Project
       end
 
-      it "should return Unfuddler::Project objects where the object should correspond to the attributes specified in the query"
+      it "should return Unfuddler::Project objects where the object should correspond to the attributes specified in the query" do
         Unfuddler::Project.find(:id => 2).first.id.should eql? 2
       end
     end
