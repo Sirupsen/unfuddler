@@ -56,17 +56,12 @@ module Unfuddler
       end
     end
 
-    def finder(objects, specification)
-      f_objects = objects.collect do |object|
-        matches = 0
-        specification.each_pair do |method, expected_value|
-          matches += 1 if object.send(method) == expected_value
+    def finder(objects, specifications)
+      objects.select do |object|
+        specifications.all? do |method, expected_value|
+          object.send(method) == expected_value
         end
-
-        object if matches == specification.length
       end
-
-      f_objects.compact
     end
   end
 end

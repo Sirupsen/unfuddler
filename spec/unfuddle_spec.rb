@@ -20,4 +20,22 @@ describe Unfuddler do
       Unfuddler.password.should == "seekrit"
     end
   end
+
+  describe "helpers" do
+    describe "finder" do
+      before(:all) do
+        @objects = []
+        @objects << Hashie::Mash.new({:id => 1, :name => "Bob"})
+        @objects << Hashie::Mash.new({:id => 2, :name => "John"})
+      end
+
+      it "should return only one object in this case" do
+        Unfuddler.finder(@objects, {:id => 1, :name => "Bob"}).should have(1).objects
+      end
+
+      it "should return the right object" do
+        Unfuddler.finder(@objects, {:id => 1, :name => "Bob"}).first.name.should == "Bob"
+      end
+    end
+  end
 end
