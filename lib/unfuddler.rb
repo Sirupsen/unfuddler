@@ -15,18 +15,27 @@ module Unfuddler
       @http = Net::HTTP.new("#{@subdomain}.unfuddle.com", 80)
     end
 
+    def authenticated?
+      true if @http
+    end
+
     def request(type, url, data = nil)
+      raise "Not authenticated!" unless authenticated?
+
       request = eval("Net::HTTP::#{type.to_s.capitalize}").new("/api/v1/#{url}", {'Content-type' => "application/xml"})
       request.basic_auth @username, @password
 
       request.body = data if data
-      handle_response(@http.request(request))
+      request = @http.request(request)
+
+      handle_response(request.body, request.code)
     end
 
-    def handle_response(response)
+    def handle_response(body, code)
       valid_codes = [201, 200, 302]
-      raise "Server returned response code: " + response.code unless valid_codes.include?(response.code.to_i)
-      Crack::XML.parse(response.body)
+      raise "Server returned response code: " + code unless valid_codes.include?(code.to_i)
+
+      Crack::XML.parse(body)
     end
 
     [:get, :put, :post, :delete].each do |method|
@@ -39,21 +48,35 @@ module Unfuddler
   end
 
   class Project < Hashie::Mash
-    def self.find(name = nil)
+    def self.find(specification = nil)
+
       projects = []
       Unfuddler.get("projects.xml")["projects"].each do |project|
         projects << Project.new(project)
       end
 
-      if name 
-        right_project = nil
-        projects.each do |project|
-          right_project = project if project.short_name == name.to_s
+      if specification.is_a?(String)
+        return projects.collect { |project| project if project.short_name == specification }
+      elsif specification.is_a?(Hash)
+        # Check each ticket if all the expected values pass, return all
+        # tickets where everything passes in an array
+        return projects.collect do |project|
+          matches = 0
+          specification.each_pair do |method, expected_value|
+            matches += 1 if project.send(method) == expected_value
+          end
+          
+          project if matches == specification.length
         end
-        return right_project
+      elsif specification == :all
+        projects
+      elsif specification == :first
+        projects.first
+      elsif specification == :last
+        projects.last
+      else
+        projects
       end
-
-      projects
     end
 
     def self.[](name = nil)
