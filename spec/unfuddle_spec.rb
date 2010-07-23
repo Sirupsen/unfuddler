@@ -4,7 +4,7 @@ describe Unfuddler do
   it "should be able to authenticate" do
     Unfuddler.authenticate(:username => "John", :password => "seekrit", :subdomain => "unfuddler")
 
-  Unfuddler.authenticated?.should be_true
+    Unfuddler.authenticated?.should be_true
   end
 
   describe "authentication values" do
