@@ -1,13 +1,23 @@
 require 'spec_helper'
 
-describe "Unfuddler" do
-  it "should be able to instance and authenticate" do
-    Unfuddler.authenticate(:username => "John", :password => "", :subdomain => "unfuddler")
+describe Unfuddler do
+  it "should be able to authenticate" do
+    Unfuddler.authenticate(:username => "John", :password => "seekrit", :subdomain => "unfuddler")
 
-    Unfuddler.subdomain.should eql "unfuddler"
-    Unfuddler.username.should eql "John"
-    Unfuddler.password.should eql ""
+  Unfuddler.authenticated?.should be_true
+  end
 
-    Unfuddler.authenticated?.should be_true
+  describe "authentication values" do
+    it "should have the subdomain set correctly" do
+      Unfuddler.subdomain.should == "unfuddler"
+    end
+
+    it "should have the username set correctly" do
+      Unfuddler.username.should == "John"
+    end
+
+    it "should have the password set correctly" do
+      Unfuddler.password.should == "seekrit"
+    end
   end
 end
