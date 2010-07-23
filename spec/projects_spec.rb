@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe "Unfuddler::Project" do
+describe Unfuddler::Project do
   before do
     Unfuddler.authenticate(:username => "John", :password => "", :subdomain => "unfuddler")
 
@@ -15,7 +15,7 @@ describe "Unfuddler::Project" do
         Unfuddler::Project.find.should be_an Array
       end
 
-      it "should return an Array with Unfuddler::Project" do
+      it "should return an Array with Unfuddler::Project objects" do
         Unfuddler::Project.find.first.should be_an_instance_of Unfuddler::Project
       end
     end
@@ -30,7 +30,7 @@ describe "Unfuddler::Project" do
       end
 
       it "should return Unfuddler::Project objects where the string passed corresponds to the name" do
-        Unfuddler::Project.find("testproject").first.short_name.should equal "testproject"
+        Unfuddler::Project.find("testproject").first.short_name.should == "testproject"
       end
     end
 
