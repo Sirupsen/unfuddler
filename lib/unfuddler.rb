@@ -45,50 +45,56 @@ module Unfuddler
         request(method, url, data)
       end
     end
+
+    def parse_specification(objects, specification)
+      if specification.is_a?(String)
+        objects.collect { |object| object if object.short_name == specification.to_s }
+      elsif specification.is_a?(Hash)
+        finder(objects, specification)
+      elsif specification.is_a?(Fixnum)
+        finder(objects, {:id => specification})
+      elsif specification == :all
+        objects
+      elsif specification == :first
+        objects.first
+      elsif specification == :last
+        objects.last
+      else
+        objects
+      end
+    end
+
+    def finder(objects, specification)
+      f_objects = objects.collect do |object|
+        matches = 0
+        specification.each_pair do |method, expected_value|
+          matches += 1 if object.send(method) == expected_value
+        end
+
+        object if matches == specification.length
+      end
+
+      f_objects.compact
+    end
   end
 
   class Project < Hashie::Mash
     def self.find(specification = nil)
+      projects = Unfuddler.get("projects.xml")["projects"].collect {|project| Project.new(project)}
 
-      projects = []
-      Unfuddler.get("projects.xml")["projects"].each do |project|
-        projects << Project.new(project)
-      end
-
-      if specification.is_a?(String)
-        return projects.collect { |project| project if project.short_name == specification }
-      elsif specification.is_a?(Hash)
-        # Check each ticket if all the expected values pass, return all
-        # tickets where everything passes in an array
-        return projects.collect do |project|
-          matches = 0
-          specification.each_pair do |method, expected_value|
-            matches += 1 if project.send(method) == expected_value
-          end
-          
-          project if matches == specification.length
-        end
-      elsif specification == :all
-        projects
-      elsif specification == :first
-        projects.first
-      elsif specification == :last
-        projects.last
-      else
-        projects
-      end
-    end
-
-    def self.[](name = nil)
-      self.find(name)
+      Unfuddler.parse_specification(projects, specification)
     end
 
     def tickets(argument = nil)
       Ticket.find(self.id, argument)
     end
 
-    def ticket
-      Ticket::Interacter.new(self.id)
+    def ticket(argument = nil)
+      Ticket.find(self.id, argument).first
+    end
+
+    def ticket!(ticket)
+      Ticket.create(self.id, ticket)
     end
   end
 
@@ -102,30 +108,13 @@ module Unfuddler
     # to match the keys in the argument. e.g.
     #   Ticket.find(:status => "new")
     # Returns all tickets with status "new"
-    def self.find(project_id, arguments = nil)
+    def self.find(project_id, specifications = nil)
       tickets = []
       Unfuddler.get("projects/#{project_id}/tickets.xml")["tickets"].each do |project|
         tickets << Ticket.new(project)
       end
-      
-      if arguments
-        specified_tickets = []
-        
-        # Check each ticket if all the expected values pass, return all
-        # tickets where everything passes in an array
-        tickets.each do |ticket|
-          matches = 0
-          arguments.each_pair do |method, expected_value|
-            matches += 1 if ticket.send(method) == expected_value
-          end
-          
-          specified_tickets << ticket if matches == arguments.length
-        end
-        
-        return specified_tickets
-      end
 
-      tickets
+      Unfuddler.parse_specification(tickets, specifications)
     end
 
     # Save ticket
@@ -135,12 +124,17 @@ module Unfuddler
       update = self.to_hash.to_xml(:root => "ticket") unless update
       Unfuddler.put("projects/#{self.project_id}/tickets/#{self.id}", update)
     end
-    
+
     # Create a ticket
     #
     # Optional argument is project_id
-    def create(project_id = nil)
-      ticket = self.to_hash.to_xml(:root => "ticket")
+    def self.create(project_id, ticket)
+      if ticket.is_a?(Unfuddler::Ticket)
+        ticket = ticket.to_hash.to_xml(:root => "ticket")
+      else
+        ticket = ticket.to_xml(:root => "ticket")
+      end
+
       Unfuddler.post("projects/#{project_id or self.project_id}/tickets", ticket)
     end
     
@@ -170,15 +164,6 @@ module Unfuddler
       Unfuddler.delete("projects/#{self.project_id}/tickets/#{self.id}")
     end
 
-    class Interacter
-      def initialize(project_id)
-        @project_id = project_id
-      end
-
-      def create(ticket = {})
-        ticket = Ticket.new(ticket)
-        ticket.create(@project_id)
-      end
-    end
+    alias_method :delete!, :delete
   end
 end
