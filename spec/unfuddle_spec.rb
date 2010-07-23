@@ -8,15 +8,15 @@ describe Unfuddler do
   end
 
   describe "authentication values" do
-    it "should have the subdomain set correctly" do
+    it "should have the subdomain set to Unfuddler" do
       Unfuddler.subdomain.should == "unfuddler"
     end
 
-    it "should have the username set correctly" do
+    it "should have the username set to John" do
       Unfuddler.username.should == "John"
     end
 
-    it "should have the password set correctly" do
+    it "should have the password set to Seekrit" do
       Unfuddler.password.should == "seekrit"
     end
   end
